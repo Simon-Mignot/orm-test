@@ -25,37 +25,42 @@ import static org.junit.Assert.*;
 /**
  * Created by fteychene on 14/05/17.
  */
-public class BasicEntityManagerTest {
+public class BasicEntityManagerTest
+{
 
     static DataSource embeddedDatasource;
     EntityManager em;
 
     @BeforeClass
-    public static void beforeClass() {
-        embeddedDatasource =  new EmbeddedDatabaseBuilder()
-                    .setType(EmbeddedDatabaseType.HSQL)
-                    .addScripts("init-db.sql")
-                    .build();
+    public static void beforeClass()
+    {
+        embeddedDatasource = new EmbeddedDatabaseBuilder()
+                .setType(EmbeddedDatabaseType.HSQL)
+                .addScripts("init-db.sql")
+                .build();
     }
 
     @Before
-    public void beforeTest() {
+    public void beforeTest()
+    {
         HikariDataSource hikariDatasource = new HikariDataSource();
         hikariDatasource.setDataSource(embeddedDatasource);
         em = BasicEntityManager.create(hikariDatasource, Stream.of(User.class).collect(Collectors.toSet()));
     }
 
     @Test
-    public void testFind() {
+    public void testFind()
+    {
         User expected = new User();
-        expected.setId(2l);
+        expected.setId(2L);
         expected.setFirstName("Robert");
         expected.setLastName("Martin");
         expected.setEmail("uncle@bob.com");
-        expected.setBirthDate(LocalDate.of(1962, 04,17));
+        expected.setBirthDate(LocalDate.of(1962, 4, 17));
 
-        Optional<User> actual = em.find(User.class, 2l);
-        if (!actual.isPresent()) {
+        Optional<User> actual = em.find(User.class, 2L);
+        if(!actual.isPresent())
+        {
             fail("User not found in db");
         }
 
@@ -63,48 +68,52 @@ public class BasicEntityManagerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testFindReject() {
+    public void testFindReject()
+    {
         em.find(InvalidUserNoEntity.class, null);
     }
 
     @Test
-    public void testFindAll() {
+    public void testFindAll()
+    {
         User expected = new User();
-        expected.setId(0l);
+        expected.setId(0L);
         expected.setFirstName("Linus");
         expected.setLastName("Torvald");
         expected.setEmail("linux.torvald@linux.org");
-        expected.setBirthDate(LocalDate.of(1969,12, 28));
+        expected.setBirthDate(LocalDate.of(1969, 12, 28));
         User expected1 = new User();
-        expected1.setId(1l);
+        expected1.setId(1L);
         expected1.setFirstName("Brian");
         expected1.setLastName("Goetz");
         expected1.setEmail("brian.goetz@oracle.com");
-        expected1.setBirthDate(LocalDate.of(1970, 11,22));
+        expected1.setBirthDate(LocalDate.of(1970, 11, 22));
         User expected2 = new User();
-        expected2.setId(2l);
+        expected2.setId(2L);
         expected2.setFirstName("Robert");
         expected2.setLastName("Martin");
         expected2.setEmail("uncle@bob.com");
-        expected2.setBirthDate(LocalDate.of(1962,04, 17));
+        expected2.setBirthDate(LocalDate.of(1962, 4, 17));
 
         List<User> expectedStream = Arrays.asList(expected, expected1, expected2);
         assertEquals(expectedStream, em.findAll(User.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testFindAllReject() {
+    public void testFindAllReject()
+    {
         em.findAll(InvalidUserNoEntity.class);
     }
 
     @Test
-    public void testInsert() {
+    public void testInsert() // fail
+    {
         User user = new User();
-        user.setId(0l);
+        user.setId(0L);
         user.setFirstName("Test");
         user.setLastName(null);
         user.setEmail("test.null@gmail.com");
-        user.setBirthDate(LocalDate.of(1990, 04,23));
+        user.setBirthDate(LocalDate.of(1990, 4, 23));
 
         Optional<User> persistedUser = em.save(user);
         assertTrue(persistedUser.isPresent());
@@ -117,58 +126,70 @@ public class BasicEntityManagerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testInsertReject() {
+    public void testInsertReject()
+    {
         em.save(new InvalidUserNoEntity());
     }
 
     @Test
-    public void testDelete() {
+    public void testDelete() // fail
+    {
         User user = new User();
         user.setFirstName("Francois");
         user.setLastName("Teychene");
         user.setEmail("francois.teychene@gmail.com");
 
         Optional<User> persistedUser = em.save(user);
-        if (!persistedUser.isPresent()) fail("Error during insertion");
+        if(!persistedUser.isPresent()) fail("Error during insertion");
 
         boolean deleted = em.delete(persistedUser.get());
         assertTrue(deleted);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testDeleteReject() {
+    public void testDeleteReject()
+    {
         em.delete(new InvalidUserNoEntity());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCheck1() {
+    public void testCheck1() // fail
+    {
         HikariDataSource hikariDatasource = new HikariDataSource();
         hikariDatasource.setDataSource(embeddedDatasource);
         BasicEntityManager.create(hikariDatasource, Stream.of(InvalidUserNoEntity.class).collect(Collectors.toSet()));
     }
-    private static class InvalidUserNoEntity {
+
+    private static class InvalidUserNoEntity
+    {
 
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCheck2() {
+    public void testCheck2() // fail
+    {
         HikariDataSource hikariDatasource = new HikariDataSource();
         hikariDatasource.setDataSource(embeddedDatasource);
         BasicEntityManager.create(hikariDatasource, Stream.of(InvalidUserNoId.class).collect(Collectors.toSet()));
     }
+
     @Entity
-    private static class InvalidUserNoId {
+    private static class InvalidUserNoId
+    {
 
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCheck3() {
+    public void testCheck3() // fail
+    {
         HikariDataSource hikariDatasource = new HikariDataSource();
         hikariDatasource.setDataSource(embeddedDatasource);
         BasicEntityManager.create(hikariDatasource, Stream.of(InvalidUserTooManyId.class).collect(Collectors.toSet()));
     }
+
     @Entity
-    private static class InvalidUserTooManyId {
+    private static class InvalidUserTooManyId
+    {
         @Id
         private Integer id1;
         @Id
